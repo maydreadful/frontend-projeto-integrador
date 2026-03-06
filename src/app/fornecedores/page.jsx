@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from 'react';
-import api from '../services/api'; // Caminho corrigido para subir um nível
+import React, { useState, useEffect } from 'react';
+import api from '@/services/api'; // Este arquivo deve conter a URL do Render
 
-export default function FornecedoresPage() {
-  const [fornecedores, setFornecedores] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [formData, setFormData] = useState({ nome: '', contato: '' });
+export default function Fornecedores() {
+  // 1. Estados para capturar os inputs do formulário
+  const [nome, setNome] = useState('');
+  const [contato, setContato] = useState('');
+  const [email, setEmail] = useState('');
+  const [listaFornecedores, setListaFornecedores] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // Função para carregar os fornecedores do Render
+  // 2. Função para carregar os dados do banco SQLite no Render
   const carregarFornecedores = async () => {
     try {
       const response = await api.get('/fornecedores');
-      setFornecedores(Array.isArray(response.data) ? response.data : []);
+      setListaFornecedores(response.data);
     } catch (error) {
-      console.error("Erro ao carregar fornecedores:", error);
-      setFornecedores([]);
-    } finally {
-      setLoading(false);
+      console.error("Erro ao buscar dados do Render:", error);
     }
   };
 
@@ -25,87 +25,114 @@ export default function FornecedoresPage() {
     carregarFornecedores();
   }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await api.post('/fornecedores', formData);
-      setFormData({ nome: '', contato: '' });
-      carregarFornecedores(); // Atualiza a lista na hora
-    } catch (error) {
-      alert("Erro ao cadastrar fornecedor. O back-end está online?");
-    }
-  };
+  // 3. O Modelo Correto de Cadastro (POST)
+  const handleCadastro = async (e) => {
+    e.preventDefault(); // Impede o recarregamento da página
+    setLoading(true);
 
-  const removerFornecedor = async (id) => {
-    if (confirm("Deseja remover este fornecedor?")) {
-      await api.delete(`/fornecedores/${id}`);
-      carregarFornecedores();
+    // Objeto com os nomes das chaves idênticos ao seu server.js
+    const novoFornecedor = { nome, contato, email };
+
+    try {
+      // Envia os dados para a rota POST no Render
+      const response = await api.post('/fornecedores', novoFornecedor);
+
+      if (response.status === 201) {
+        alert("Fornecedor cadastrado com sucesso! 🦇");
+        // Limpa os campos após o sucesso
+        setNome('');
+        setContato('');
+        setEmail('');
+        // Atualiza a tabela imediatamente
+        carregarFornecedores();
+      }
+    } catch (error) {
+      // Ajuda a identificar se o erro é CORS ou de servidor
+      console.error("Erro na requisição:", error.response?.data || error.message);
+      
+      if (error.message === "Network Error") {
+        alert("Erro de Rede: Verifique se o Render está com status 'Live' e se o CORS está liberado.");
+      } else {
+        alert("Erro ao cadastrar. Verifique o console do navegador (F12).");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="p-8 bg-zinc-950 min-h-screen text-white">
-      {/* Cabeçalho Gótico */}
-      <div className="mb-10 border-b-2 border-purple-900/30 pb-6">
-        <h2 className="text-3xl font-black uppercase tracking-tighter">
-          GESTÃO DE <span className="text-purple-600">FORNECEDORES</span>
-        </h2>
-        <p className="text-zinc-500 text-xs mt-1 uppercase tracking-widest">Controle de parceiross GRAN</p>
-      </div>
+    <div className="p-8 max-w-6xl mx-auto bg-black min-h-screen text-white">
+      <header className="mb-10">
+        <h1 className="text-4xl font-black uppercase tracking-tighter">
+          Estoque <span className="text-purple-600">Moth Piercing</span>
+        </h1>
+        <p className="text-zinc-500 text-xs tracking-[0.3em] uppercase">Gestão de Parceiros e Fornecedores</p>
+      </header>
 
       {/* Formulário de Cadastro */}
-      <form onSubmit={handleSubmit} className="bg-zinc-900 p-6 rounded-2xl border border-purple-900/40 mb-12 shadow-xl">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <input 
-            className="bg-zinc-800 border border-zinc-700 p-3 rounded-xl focus:border-purple-500 outline-none transition-all text-white placeholder-zinc-500"
-            placeholder="Nome da Empresa / Fornecedor"
-            value={formData.nome}
-            onChange={(e) => setFormData({...formData, nome: e.target.value})}
-            required
-          />
-          <input 
-            className="bg-zinc-800 border border-zinc-700 p-3 rounded-xl focus:border-purple-500 outline-none transition-all text-white placeholder-zinc-500"
-            placeholder="Contato (Email ou WhatsApp)"
-            value={formData.contato}
-            onChange={(e) => setFormData({...formData, contato: e.target.value})}
-            required
-          />
-          <button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-purple-500/10 uppercase tracking-widest text-sm">
-            Cadastrar Parceiro
-          </button>
-        </div>
-      </form>
+      <section className="bg-zinc-900/40 p-8 rounded-3xl border border-zinc-800 mb-12">
+        <form onSubmit={handleCadastro} className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+          <div>
+            <label className="text-[10px] font-bold uppercase text-zinc-500 mb-2 block">Nome do Parceiro</label>
+            <input 
+              type="text" value={nome} onChange={(e) => setNome(e.target.value)} required
+              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 focus:border-purple-600 outline-none transition-all"
+              placeholder="Ex: Jóias Góticas LTDA"
+            />
+          </div>
 
-      {/* Tabela de Listagem Dinâmica */}
-      <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/50">
+          <div>
+            <label className="text-[10px] font-bold uppercase text-zinc-500 mb-2 block">Telefone/Contato</label>
+            <input 
+              type="text" value={contato} onChange={(e) => setContato(e.target.value)}
+              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 focus:border-purple-600 outline-none transition-all"
+              placeholder="(85) 99999-0000"
+            />
+          </div>
+
+          <div>
+            <label className="text-[10px] font-bold uppercase text-zinc-500 mb-2 block">E-mail</label>
+            <input 
+              type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 focus:border-purple-600 outline-none transition-all"
+              placeholder="contato@fornecedor.com"
+            />
+          </div>
+
+          <button 
+            type="submit" disabled={loading}
+            className="bg-purple-700 hover:bg-purple-600 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-purple-900/20 disabled:opacity-50"
+          >
+            {loading ? 'GRAVANDO...' : 'CADASTRAR'}
+          </button>
+        </form>
+      </section>
+
+      {/* Listagem de Fornecedores */}
+      <div className="bg-zinc-900/20 rounded-3xl border border-zinc-800 overflow-hidden">
         <table className="w-full text-left">
-          <thead className="bg-zinc-900 text-zinc-400 border-b border-zinc-800">
+          <thead className="bg-zinc-900 text-[10px] uppercase font-bold text-zinc-500 tracking-widest">
             <tr>
-              <th className="p-4 uppercase text-[10px] font-bold tracking-widest">Nome</th>
-              <th className="p-4 uppercase text-[10px] font-bold tracking-widest">Contato</th>
-              <th className="p-4 uppercase text-[10px] font-bold tracking-widest text-center">Ações</th>
+              <th className="p-5">Nome</th>
+              <th className="p-5">Contato</th>
+              <th className="p-5">E-mail</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-800">
-            {loading ? (
-              <tr><td colSpan="3" className="p-10 text-center text-zinc-600 animate-pulse">Sincronizando com o Render...</td></tr>
-            ) : fornecedores?.length > 0 ? (
-              fornecedores.map((f) => (
-                <tr key={f.id} className="hover:bg-purple-950/10 transition-colors group">
-                  <td className="p-4 font-medium text-zinc-200">{f.nome}</td>
-                  <td className="p-4 text-zinc-400 font-mono text-sm">{f.contato}</td>
-                  <td className="p-4 text-center">
-                    <button 
-                      onClick={() => removerFornecedor(f.id)}
-                      className="text-zinc-600 hover:text-red-500 transition-colors font-bold text-xs uppercase"
-                    >
-                      Remover
-                    </button>
-                  </td>
+            {listaFornecedores.length > 0 ? (
+              listaFornecedores.map((f) => (
+                <tr key={f.id} className="hover:bg-zinc-800/20 transition-colors">
+                  <td className="p-5 font-medium">{f.nome}</td>
+                  <td className="p-5 text-zinc-400">{f.contato}</td>
+                  <td className="p-5 text-zinc-400">{f.email}</td>
                 </tr>
               ))
             ) : (
-              <tr><td colSpan="3" className="p-10 text-center text-zinc-700">Nenhum fornecedor cadastrado no sistema.</td></tr>
+              <tr>
+                <td colSpan="3" className="p-10 text-center text-zinc-600 text-sm">
+                  Nenhum fornecedor encontrado no banco do Render.
+                </td>
+              </tr>
             )}
           </tbody>
         </table>
