@@ -50,7 +50,7 @@ export default function FornecedoresPage() {
         <h2 className="text-3xl font-black uppercase tracking-tighter">
           GESTÃO DE <span className="text-purple-600">FORNECEDORES</span>
         </h2>
-        <p className="text-zinc-500 text-xs mt-1 uppercase tracking-widest">Controle de parceiros Moth Piercing</p>
+        <p className="text-zinc-500 text-xs mt-1 uppercase tracking-widest">Controle de parceiross GRAN</p>
       </div>
 
       {/* Formulário de Cadastro */}
