@@ -51,6 +51,10 @@ export default function RootLayout({
               </Link>
             </nav>
           </div>
+
+          <Link href="/relatorios" className="hover:text-purple-500 transition-colors uppercase text-xs font-bold tracking-widest">
+            Relatórios
+          </Link>
         </header>
 
         {/* Área de Conteúdo */}

@@ -49,7 +49,7 @@ export default function AssociacoesPage() {
       {/* Cabeçalho Gótico Moderno */}
       <div className="mb-10 border-b-2 border-purple-900/30 pb-6">
         <h2 className="text-3xl font-black uppercase tracking-tighter">
-          VINCULAR <span className="text-purple-600">N:N</span>
+          Vincular <span className="text-purple-600">Fornecedores</span>
         </h2>
         <p className="text-zinc-500 text-xs mt-1 uppercase tracking-widest">Associação de Produtos e Fornecedores Moth Piercing</p>
       </div>
