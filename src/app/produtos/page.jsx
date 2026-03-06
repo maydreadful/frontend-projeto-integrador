@@ -1,22 +1,27 @@
-"use client"; // Obrigatório no Next.js
+"use client";
 
-import { useState, useEffect } from 'react';
-// Caminho corrigido conforme sua estrutura de pastas
-import api from '../services/api'; 
+import { useState, useEffect } from "react";
+import api from "../services/api";
 
 export default function ProdutosPage() {
+
   const [produtos, setProdutos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [formData, setFormData] = useState({ nome: '', preco: '' });
+
+  const [formData, setFormData] = useState({
+    nome: "",
+    preco: "",
+    descricao: "",
+    codigoBarras: ""
+  });
 
   const carregarProdutos = async () => {
     try {
-      const response = await api.get('/produtos');
-      // Proteção adicional para garantir que sempre teremos um array
+      const response = await api.get("/produtos");
       setProdutos(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Erro ao carregar produtos:", error);
-      setProdutos([]); 
+      setProdutos([]);
     } finally {
       setLoading(false);
     }
@@ -28,12 +33,22 @@ export default function ProdutosPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      await api.post('/produtos', formData);
-      setFormData({ nome: '', preco: '' });
-      carregarProdutos(); // Atualiza a lista em tempo real
+
+      const response = await api.post("/produtos", formData);
+
+      setProdutos([...produtos, response.data]);
+
+      setFormData({
+        nome: "",
+        preco: "",
+        descricao: "",
+        codigoBarras: ""
+      });
+
     } catch (error) {
-      alert("Erro ao criar produto. Verifique se o back-end está rodando.");
+      alert("Erro ao cadastrar produto.");
     }
   };
 
@@ -46,71 +61,123 @@ export default function ProdutosPage() {
 
   return (
     <div className="p-8 bg-white min-h-screen">
-      {/* Cabeçalho Gótico Moderno */}
-      <div className="mb-10 border-b-4 border-purple-600 pb-4">
-        <h2 className="text-3xl font-black text-black">MEU <span className="text-purple-600">ESTOQUE</span></h2>
-        <p className="text-gray-400 text-xs uppercase tracking-widest mt-1">Gestão de Produtos - Projeto Integrador</p>
-      </div>
 
-      {/* Formulário de Cadastro - Agora limpo e funcional */}
-      <form onSubmit={handleSubmit} className="bg-zinc-50 p-6 rounded-2xl border border-gray-100 mb-12 shadow-sm">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <input 
-            className="border-2 border-gray-200 p-3 rounded-xl focus:border-purple-500 outline-none transition-all"
-            placeholder="Nome do Produto (ex: Piercing)"
+      <h2 className="text-3xl font-bold mb-8">Cadastro de Produtos</h2>
+
+      <form onSubmit={handleSubmit} className="mb-10">
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+          <input
+            className="border p-3 rounded"
+            placeholder="Nome"
             value={formData.nome}
-            onChange={(e) => setFormData({...formData, nome: e.target.value})}
+            onChange={(e) =>
+              setFormData({ ...formData, nome: e.target.value })
+            }
             required
           />
-          <input 
+
+          <input
             type="number"
-            className="border-2 border-gray-200 p-3 rounded-xl focus:border-purple-500 outline-none transition-all"
-            placeholder="Preço R$"
+            className="border p-3 rounded"
+            placeholder="Preço"
             value={formData.preco}
-            onChange={(e) => setFormData({...formData, preco: e.target.value})}
+            onChange={(e) =>
+              setFormData({ ...formData, preco: e.target.value })
+            }
             required
           />
-          <button type="submit" className="bg-purple-600 hover:bg-black text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-purple-200">
-            CADASTRAR PRODUTO
-          </button>
+
+          <input
+            className="border p-3 rounded"
+            placeholder="Descrição"
+            value={formData.descricao}
+            onChange={(e) =>
+              setFormData({ ...formData, descricao: e.target.value })
+            }
+          />
+
+          <input
+            className="border p-3 rounded"
+            placeholder="Código de Barras"
+            value={formData.codigoBarras}
+            onChange={(e) =>
+              setFormData({ ...formData, codigoBarras: e.target.value })
+            }
+          />
+
         </div>
+
+        <button
+          type="submit"
+          className="mt-4 bg-purple-600 text-white px-6 py-2 rounded"
+        >
+          Cadastrar Produto
+        </button>
+
       </form>
 
-      {/* Tabela de Listagem */}
-      <div className="overflow-hidden rounded-2xl border border-gray-200">
-        <table className="w-full text-left">
-          <thead className="bg-black text-white">
+      <table className="w-full border">
+
+        <thead className="bg-black text-white">
+          <tr>
+            <th className="p-3">Nome</th>
+            <th className="p-3">Preço</th>
+            <th className="p-3">Descrição</th>
+            <th className="p-3">Ações</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          {loading ? (
             <tr>
-              <th className="p-4 uppercase text-xs font-bold">Produto</th>
-              <th className="p-4 uppercase text-xs font-bold">Preço</th>
-              <th className="p-4 uppercase text-xs font-bold text-center">Ações</th>
+              <td colSpan="4" className="text-center p-6">
+                Carregando...
+              </td>
             </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {loading ? (
-              <tr><td colSpan="3" className="p-10 text-center text-gray-400">Consultando banco de dados...</td></tr>
-            ) : produtos?.length > 0 ? (
-              // O uso do ?. aqui na tabela é o lugar correto!
-              produtos.map((p) => (
-                <tr key={p.id} className="hover:bg-purple-50 transition-colors">
-                  <td className="p-4 font-medium text-gray-800">{p.nome}</td>
-                  <td className="p-4 text-gray-600 font-mono">R$ {parseFloat(p.preco).toFixed(2)}</td>
-                  <td className="p-4 text-center">
-                    <button 
-                      onClick={() => removerProduto(p.id)}
-                      className="text-red-500 hover:text-red-700 font-bold px-3 py-1"
-                    >
-                      Remover
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr><td colSpan="3" className="p-10 text-center text-gray-400">Nenhum produto cadastrado.</td></tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+          ) : produtos.length > 0 ? (
+
+            produtos.map((p) => (
+
+              <tr key={p.id} className="border-t">
+
+                <td className="p-3">{p.nome}</td>
+                <td className="p-3">
+                  R$ {parseFloat(p.preco).toFixed(2)}
+                </td>
+                <td className="p-3">{p.descricao}</td>
+
+                <td className="p-3">
+
+                  <button
+                    onClick={() => removerProduto(p.id)}
+                    className="text-red-600"
+                  >
+                    Remover
+                  </button>
+
+                </td>
+
+              </tr>
+
+            ))
+
+          ) : (
+
+            <tr>
+              <td colSpan="4" className="text-center p-6">
+                Nenhum produto cadastrado
+              </td>
+            </tr>
+
+          )}
+
+        </tbody>
+
+      </table>
+
     </div>
   );
 }
