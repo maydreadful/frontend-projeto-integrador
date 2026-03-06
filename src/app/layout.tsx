@@ -47,7 +47,7 @@ export default function RootLayout({
                 href="/associacoes" 
                 className="px-5 py-2 rounded-lg font-bold text-sm uppercase tracking-widest bg-purple-700 text-white hover:bg-white hover:text-purple-700 transition-all duration-300 shadow-lg shadow-purple-500/20"
               >
-                Vincular N:N
+                VINCULAR FORNECEDORES
               </Link>
             </nav>
           </div>
