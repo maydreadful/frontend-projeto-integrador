@@ -1,3 +1,10 @@
+FACULDADE GRAN (https://faculdade.grancursosonline.com.br/)
+
+Projeto Disciplina Projeto Integrador
+
+Link backend: https://backend-projeto-integrador-s6n2.onrender.com Repositório FRONT END: https://github.com/maydreadful/frontend-projeto-integrador
+
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
